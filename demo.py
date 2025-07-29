@@ -219,7 +219,7 @@ def main():
     model = ReconModel(config).to(device)
     cpt_root = './output/kubric/joint_pose_2d3d/pred_pose_2d3d_joint'
     cpt_name = 'cpt_best_psnr_26.340881009038913_7.545314707482719.pth.tar'
-    cpt = torch.load(os.path.join(cpt_root, cpt_name))['state_dict']
+    cpt = torch.load(os.path.join(cpt_root, cpt_name), weights_only=False)['state_dict']
     model.load_state_dict(cpt, strict=True)
     model = torch.nn.DataParallel(model)
     
@@ -227,7 +227,7 @@ def main():
     model_gt = ReconModel(config).to(device)
     cpt_root = './output/kubric/gt_pose/gt_pose'
     cpt_name = 'cpt_best_psnr_31.842686198427398.pth.tar'
-    cpt = torch.load(os.path.join(cpt_root, cpt_name))['state_dict']
+    cpt = torch.load(os.path.join(cpt_root, cpt_name), weights_only=False)['state_dict']
     del cpt['encoder_traj.out.3.weight']
     del cpt['encoder_traj.out.3.bias']
     model_gt.load_state_dict(cpt, strict=False)
@@ -247,7 +247,7 @@ def main():
                     mask_np = np.uint8(np.asarray(img_pil)[:,:,3:] > 0).copy()
                     img_np *= mask_np
             rgb = Image.fromarray(img_np[:,:,:3])
-            rgb = rgb.resize((256, 256), Image.ANTIALIAS)
+            rgb = rgb.resize((256, 256), Image.BICUBIC)
             rgb = np.asarray(rgb).transpose((2,0,1)) / 255.0   # [3,H,W]
             rgb = torch.from_numpy(rgb)
             cur_data.append(rgb)
